@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <!-- Basic Page Needs
+    –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <meta charset="utf-8">
+    <title>Stripe Custom.</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Mobile Specific Metas
+    –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- FONT
+    –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+
+    <!-- CSS
+    –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <div class="row" style="text-align: center; min-height: 100%;">
+        <div class="twelve column" style="margin-top: 5%; height: 100%">
+            <h1 class="section-heading">Заголовок</h1>
+            <p class="section-description" style="max-width: 60%; margin-left: auto; margin-right: auto;">Описание товара</p>
+            <form class="checkout" action="/" method="POST" id="payment-form">
+                <div class="checkout-header">
+                    <h1 class="checkout-title">Powered by Stripe</h1>
+                </div>
+                <p>
+                    <span class='payment-errors'></span>
+                </p>
+                <p>
+                    <input data-stripe="name" type="text" class="checkout-input checkout-name" placeholder="Имя владельца карты">
+                </p>
+                <p>
+                    <input name="email" type="email" class="checkout-input checkout-email" placeholder="Email" autofocus>
+                    <input data-stripe="exp-month" type="number" pattern="[0-9]*" inputmode="numeric" class="checkout-input checkout-exp" placeholder="ММ">
+                    <input data-stripe="exp-year" type="number" pattern="[0-9]*" inputmode="numeric" class="checkout-input checkout-exp" placeholder="ГГ">
+                </p>
+                <p>
+                    <input data-stripe="number" type="number" pattern="[0-9]*" inputmode="numeric" class="checkout-input checkout-card" placeholder="4111 1111 1111 1111">
+                    <input data-stripe="cvc" type="number" pattern="[0-9]*" inputmode="numeric" class="checkout-input checkout-cvc" placeholder="CVC">
+                </p>
+                <p>
+                    <button type="submit" class="checkout-btn">100 руб.</button>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript">
+    Stripe.setPublishableKey('STRIPE_API_KEY');
+
+    var stripeResponseHandler = function(status, response) {
+        var $form = $('#payment-form');
+
+        if (response.error) {
+            $form.find('.payment-errors').text(response.error.message);
+            $form.find('button').prop('disabled', false);
+        } else {
+            var token = response.id;
+            var tokeType = response.card.object;
+            var name = response.card.name;
+
+            $form.append($('<input type="hidden" name="stripeToken" />').val(token));
+            $form.append($('<input type="hidden" name="stripeTokenType" />').val(tokeType));
+            $form.append($('<input type="hidden" name="stripeName" />').val(name));
+            $form.get(0).submit();
+        }
+    };
+
+    jQuery(function($) {
+        $('#payment-form').submit(function (e) {
+            var $form = $(this);
+
+            $form.find('button').prop('disabled', true);
+
+            Stripe.card.createToken($form, stripeResponseHandler);
+
+            return false;
+        });
+    });
+</script>
+</body>
+</html>
